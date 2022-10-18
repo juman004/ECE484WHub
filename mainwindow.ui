@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>-20</y>
+      <y>-30</y>
       <width>801</width>
       <height>621</height>
      </rect>
@@ -177,15 +177,15 @@
        <rect>
         <x>70</x>
         <y>350</y>
-        <width>160</width>
+        <width>261</width>
         <height>18</height>
        </rect>
       </property>
       <property name="minimum">
-       <number>-255</number>
+       <number>0</number>
       </property>
       <property name="maximum">
-       <number>255</number>
+       <number>99</number>
       </property>
       <property name="singleStep">
        <number>1</number>
@@ -197,7 +197,7 @@
      <widget class="QLabel" name="label_4">
       <property name="geometry">
        <rect>
-        <x>260</x>
+        <x>340</x>
         <y>350</y>
         <width>71</width>
         <height>20</height>
@@ -211,13 +211,13 @@
       <property name="geometry">
        <rect>
         <x>70</x>
-        <y>410</y>
-        <width>160</width>
+        <y>400</y>
+        <width>501</width>
         <height>18</height>
        </rect>
       </property>
       <property name="minimum">
-       <number>-10</number>
+       <number>0</number>
       </property>
       <property name="maximum">
        <number>25</number>
@@ -232,8 +232,8 @@
      <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
-        <x>260</x>
-        <y>410</y>
+        <x>580</x>
+        <y>400</y>
         <width>71</width>
         <height>20</height>
        </rect>
@@ -251,7 +251,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

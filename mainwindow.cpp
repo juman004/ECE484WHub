@@ -3,11 +3,17 @@
 
 
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    socket = new QUdpSocket(this);
+    setipFPGA("192.168.0.249");
+    setportNumber(1234);
+    socket -> bind(QHostAddress(getipFPGA()),getportNumber());
+    data.resize(4);
 }
 
 MainWindow::~MainWindow()
@@ -178,7 +184,7 @@ QImage MainWindow::adjContrast(QImage &image, int factor)
     int maxintensity =0;
 
    QImage  newImage = origin;// new image QImage Pointer, based on size of orginal image format chanegd to RBG32 so RGB values can be cha
-    qDebug("Factir pixel : %d %d", newImage.height(), newImage.width());
+    //qDebug("Factir pixel : %d %d", newImage.height(), newImage.width());
 
    for(int y=0; y<newImage.height(); ++y)  // go throuhg pixesl and find max and min intensity
    {
@@ -265,8 +271,11 @@ QImage MainWindow::adjContrast(QImage &image, int factor)
 void MainWindow::on_bn_Slider_sliderMoved(int position)
 {
 
+    setbrightVal(position);
+    sendBrightnessToFPGA();
     QImage copy= getimg3();
     QImage orgImg= adjBright(copy,position);
+   // sendBrightnessToFPGA();
     setimg4(orgImg);
     ui->lbl_image_5->setPixmap(QPixmap::fromImage(orgImg));
 
@@ -276,10 +285,164 @@ void MainWindow::on_bn_Slider_sliderMoved(int position)
 void MainWindow::on_bn_Slider_2_sliderReleased()
 {
     int value = ui->bn_Slider_2->value();
+    setcontVal(value);
+    sendBrightnessToFPGA();
     qDebug("Factir pixel : %d", value);
     QImage copyBright = getimg3();
     QImage contImg= adjContrast(copyBright,value); // call fun
+     //sendBrightnessToFPGA();
     ui->lbl_image_5->setPixmap(QPixmap::fromImage(contImg));
     contImg.save("Contrast.bmp"); // save the image
 }
+void MainWindow::sendToUDPServer(QString x, int port)
+{
+    QHostAddress q;
+    q.setAddress(x);
+    socket->writeDatagram(data,q,port);
+ }
 
+
+
+
+ void MainWindow::sendBrightnessToFPGA()
+ {
+
+    int brightTemp = getbrightValue();
+    int contTemp = getcontrastValue();
+    qDebug("Values  : %d %d", brightTemp, contTemp);
+    std::string temp = std::to_string(brightTemp);
+    std::string temp1 = std::to_string(contTemp);
+
+
+
+    char bright[] = "00";
+    char contrast[] = "00";
+
+
+
+    if ((brightTemp>= 0) && (brightTemp <= 9) && (contTemp>= 0) && (contTemp <= 9) )
+    {
+
+       bright[0] = '0';
+       bright[1] = temp[0];
+       contrast[0]= '0';
+       contrast[1] =temp1[0];
+
+    }
+
+   else
+    {
+
+        if (temp.size()==1 && temp1.size() ==2)
+        {
+            qDebug("I am here");
+            bright[0] = '0';
+            bright[1] = temp[0];
+            contrast[0]= temp1[0];
+            contrast[1] =temp1[1];
+            qDebug("bright : %s ", bright);
+            qDebug("contrast: %s ", contrast);
+
+        }
+
+        if (temp1.size()==1 && temp.size() == 2)
+        {
+            bright[0] = temp[0];
+            bright[1] = temp[1];
+            contrast[0]= '0';
+            contrast[1] =temp1[0];
+
+        }
+        if (temp.size() == 2 && temp1.size()== 2)
+         {
+
+
+        bright[0] = temp[0];
+        bright[1] = temp[1];
+        contrast[0]= temp1[0];
+        contrast[1] =temp1[1];
+        //qDebug("charcter : %c %c", temp1[0], temp1[1]);
+        }
+
+
+
+      }
+
+
+    data[0] = bright[0];
+    data[1] = bright[1];
+    data[2] = contrast[0];
+    data[3] = contrast[1];
+    QString test(data);
+    qDebug("dataArrya : %s ", test.toStdString().c_str());
+
+
+    sendToUDPServer(getipFPGA(),getportNumber());
+
+
+
+
+
+
+    /*
+
+    if((brightTemp >= 0 && contTemp >= 0) && (brightTemp <= 100 && contTemp <= 100))
+
+    {
+        std::string temp = std::to_string(brightTemp);
+        std::string temp1 = std::to_string(contTemp);
+
+        // qDebug("inital string: %s ", temp.c_str());
+         // qDebug("inital string size : %llu ", temp.size());
+        if (temp.empty() != true)
+        {
+
+            qDebug("inital string size : %llu ", temp.size());
+            if (temp.size() == 1 )
+
+            {
+                data[0] = '0';
+                data[1] = temp[0];
+                data[2] = '0';
+                data[3] = '0';
+                QString test(data);
+                qDebug("dataArrya :  %s ", test.toStdString().c_str());
+                sendToUDPServer(getipFPGA(),getportNumber());
+            }
+            else
+            {
+            data[0] = temp[0];  // gets tens place
+            data[1] = temp[1];  // get ones place
+            data[2] = '0';
+            data[3] = '0';
+            sendToUDPServer(getipFPGA(),getportNumber());
+            //qDebug("charcter : %c %c", temp[0], temp[1]);
+            //qsizetype n= data.size();
+             //qDebug("size :  %lld ", n);
+            // QString test(data);
+            //   qDebug("dataArrya :  %s ", test.toStdString().c_str());
+
+            }
+        }
+
+
+
+
+    }
+
+*/
+
+
+     // QByteArray data;
+    // data.resize(4);
+     //data[0] = '1';
+     //data[1] ='2';
+     //data[2] ='3';
+   //  data[3] ='4';
+     //QHostAddress q;
+     //q.setAddress("192.168.0.249");
+    // socket->writeDatagram(data,q,1234 );
+
+
+
+ }

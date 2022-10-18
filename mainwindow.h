@@ -8,12 +8,20 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <QUdpSocket>
+#include <string>
+#include <QtGlobal>
+
 
 //#include "opencv2/opencv.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+
+
+
 
 class MainWindow : public QMainWindow
 {
@@ -23,6 +31,18 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     int sliderVal;
+
+
+    QString ipFPGA;
+    int portNumber;
+    QUdpSocket *socket;
+    QByteArray data;
+
+
+    int brightValue=0;;
+    int contrastValue=0;
+
+
     QString file1;
     QString file2;
     QString file3;
@@ -30,6 +50,12 @@ public:
     QImage img2;
     QImage img3;
     QImage img4;
+
+    QString getipFPGA(){return ipFPGA;}
+    int getportNumber(){return portNumber;}
+
+    int getbrightValue(){return brightValue;}
+    int getcontrastValue(){return contrastValue;}
 
     QString getFile1(){return file1;}
     QString getFile2(){return file2;}
@@ -45,6 +71,9 @@ public:
     QImage adjBright(QImage &image,int brightness);
     QImage adjContrast(QImage &image, int factor);
 
+    void sendBrightnessToFPGA();
+    void sendToUDPServer(QString x, int port);
+
 
 
 private slots:
@@ -57,6 +86,17 @@ private slots:
     void on_pushButton_3_clicked();
 
     void setsliderVal(int value){sliderVal = value;}
+
+
+    void setbrightVal (int value){brightValue = value;}
+     void setcontVal (int value){contrastValue = value;}
+
+
+
+
+    void setipFPGA(QString ip) {ipFPGA = ip;}
+    void setportNumber(int port) {portNumber = port;}
+
 
     void setFile1(QString file){file1 = file;}
     void setFile2(QString file){file2 = file;}
@@ -79,8 +119,10 @@ private slots:
 
     void on_bn_Slider_2_sliderReleased();
 
+
 private:
     Ui::MainWindow *ui;
+    //QUdpSocket *socket;
 };
 
 
