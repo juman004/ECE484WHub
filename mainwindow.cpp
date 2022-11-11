@@ -9,11 +9,28 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    socket = new QUdpSocket(this);
-    setipFPGA("192.168.0.249");
+ //   socket = new QUdpSocket(this);
+    setipFPGA("192.168.0.16");
     setportNumber(1234);
-    socket -> bind(QHostAddress(getipFPGA()),getportNumber());
+    ui->label_6->setText(getipFPGA());
+    QString temp;
+    temp.setNum(getportNumber());
+    ui->label_9->setText(temp);
+   // socket -> bind(QHostAddress(getipFPGA()),getportNumber());
     data.resize(4);
+
+
+    // TCP Socket Initalization
+    socket1= new QTcpSocket (this);
+    //socket1->connectToHost(QHostAddress(getipFPGA()),getportNumber());
+
+
+    //QObject::connect(socket1, SIGNAL(QIODevice::readyRead()), this, SLOT(MainWindow::onReadyRead()));
+
+
+
+
+
 }
 
 MainWindow::~MainWindow()
@@ -106,26 +123,7 @@ void MainWindow::on_pushButton_6_clicked()
 }
 
 // load task 2 image
-void MainWindow::on_pushButton_7_clicked()
-{
 
-    /** follows same procedure as previous buttons to load an image */
-    QString filename = QFileDialog::getOpenFileName(this, tr("Choose"), "", tr("Images(*.bmp)"));
-    setFile3(filename);
-    if (QString::compare(filename, QString()) != 0)
-    {
-
-        QImage image;
-        bool valid = image.load(filename);
-        if (valid)
-        {
-         ui->lbl_image_5->setPixmap(QPixmap::fromImage(image));
-        setimg3(image);
-        setimg4(image);
-        }
-
-    }
-}
 
 
 QImage MainWindow::adjBright(QImage &image,int brightness)
@@ -272,12 +270,13 @@ void MainWindow::on_bn_Slider_sliderMoved(int position)
 {
 
     setbrightVal(position);
-    sendBrightnessToFPGA();
+   //valueSplitter();
     QImage copy= getimg3();
     QImage orgImg= adjBright(copy,position);
    // sendBrightnessToFPGA();
     setimg4(orgImg);
     ui->lbl_image_5->setPixmap(QPixmap::fromImage(orgImg));
+     orgImg.save("test.bmp"); // save the image
 
 }
 
@@ -286,13 +285,13 @@ void MainWindow::on_bn_Slider_2_sliderReleased()
 {
     int value = ui->bn_Slider_2->value();
     setcontVal(value);
-    sendBrightnessToFPGA();
+   // valueSplitter();
     qDebug("Factir pixel : %d", value);
-    QImage copyBright = getimg3();
+    QImage copyBright = getimg4();
     QImage contImg= adjContrast(copyBright,value); // call fun
      //sendBrightnessToFPGA();
     ui->lbl_image_5->setPixmap(QPixmap::fromImage(contImg));
-    contImg.save("Contrast.bmp"); // save the image
+    contImg.save("test.bmp"); // save the image
 }
 void MainWindow::sendToUDPServer(QString x, int port)
 {
@@ -304,7 +303,7 @@ void MainWindow::sendToUDPServer(QString x, int port)
 
 
 
- void MainWindow::sendBrightnessToFPGA()
+ void MainWindow::valueSplitter()
  {
 
     int brightTemp = getbrightValue();
@@ -313,21 +312,15 @@ void MainWindow::sendToUDPServer(QString x, int port)
     std::string temp = std::to_string(brightTemp);
     std::string temp1 = std::to_string(contTemp);
 
-
-
     char bright[] = "00";
     char contrast[] = "00";
 
-
-
     if ((brightTemp>= 0) && (brightTemp <= 9) && (contTemp>= 0) && (contTemp <= 9) )
     {
-
        bright[0] = '0';
        bright[1] = temp[0];
        contrast[0]= '0';
        contrast[1] =temp1[0];
-
     }
 
    else
@@ -342,107 +335,219 @@ void MainWindow::sendToUDPServer(QString x, int port)
             contrast[1] =temp1[1];
             qDebug("bright : %s ", bright);
             qDebug("contrast: %s ", contrast);
-
         }
-
         if (temp1.size()==1 && temp.size() == 2)
         {
             bright[0] = temp[0];
             bright[1] = temp[1];
             contrast[0]= '0';
             contrast[1] =temp1[0];
-
         }
         if (temp.size() == 2 && temp1.size()== 2)
          {
-
-
         bright[0] = temp[0];
         bright[1] = temp[1];
         contrast[0]= temp1[0];
         contrast[1] =temp1[1];
-        //qDebug("charcter : %c %c", temp1[0], temp1[1]);
+
         }
 
-
-
       }
-
-
     data[0] = bright[0];
     data[1] = bright[1];
     data[2] = contrast[0];
     data[3] = contrast[1];
-    QString test(data);
-    qDebug("dataArrya : %s ", test.toStdString().c_str());
-
-
+    //QString test(data);
+    //qDebug("dataArrya : %s ", test.toStdString().c_str());
     sendToUDPServer(getipFPGA(),getportNumber());
 
+ }
+
+void MainWindow::on_pushButton_8_clicked()
+{
+    ui->label_6->setText(ui->lineEdit->text());
+    setipFPGA(ui->lineEdit->text());
 
 
+}
+
+void MainWindow::on_pushButton_9_clicked()
+{
+    ui->label_9->setText(ui->lineEdit_2->text());
+    setportNumber(ui->lineEdit_2->text().toUInt());
+
+}
 
 
-
-    /*
-
-    if((brightTemp >= 0 && contTemp >= 0) && (brightTemp <= 100 && contTemp <= 100))
-
+void MainWindow::on_pushButton_10_clicked()
+{
+    QString filename = QFileDialog::getOpenFileName(this, tr("Choose"), "", tr("Images(*.bmp)")); //get file path from user
+    setFile1(filename);    // save file path incase needed for later
+    if (QString::compare(filename, QString()) != 0)  // make sure filepath is valid
     {
-        std::string temp = std::to_string(brightTemp);
-        std::string temp1 = std::to_string(contTemp);
 
-        // qDebug("inital string: %s ", temp.c_str());
-         // qDebug("inital string size : %llu ", temp.size());
-        if (temp.empty() != true)
+        QImage image;  // create qImage instance
+        bool valid = image.load(filename);  //load file path into QImage, true if succesful
+
+
+        if (valid)  // if successful
         {
+        ui->label_10->setScaledContents(true); // ensures that the pictures scales to the lable
+         ui->label_10->setPixmap(QPixmap::fromImage(image));  //display the image
+         setimg1(image); // save QImage to data structure
 
-            qDebug("inital string size : %llu ", temp.size());
-            if (temp.size() == 1 )
-
-            {
-                data[0] = '0';
-                data[1] = temp[0];
-                data[2] = '0';
-                data[3] = '0';
-                QString test(data);
-                qDebug("dataArrya :  %s ", test.toStdString().c_str());
-                sendToUDPServer(getipFPGA(),getportNumber());
-            }
-            else
-            {
-            data[0] = temp[0];  // gets tens place
-            data[1] = temp[1];  // get ones place
-            data[2] = '0';
-            data[3] = '0';
-            sendToUDPServer(getipFPGA(),getportNumber());
-            //qDebug("charcter : %c %c", temp[0], temp[1]);
-            //qsizetype n= data.size();
-             //qDebug("size :  %lld ", n);
-            // QString test(data);
-            //   qDebug("dataArrya :  %s ", test.toStdString().c_str());
-
-            }
         }
-
-
-
 
     }
 
-*/
 
 
-     // QByteArray data;
-    // data.resize(4);
-     //data[0] = '1';
-     //data[1] ='2';
-     //data[2] ='3';
-   //  data[3] ='4';
-     //QHostAddress q;
-     //q.setAddress("192.168.0.249");
-    // socket->writeDatagram(data,q,1234 );
+
+}
+
+
+void MainWindow::on_pushButton_11_clicked()
+{
+    /** Same procedure as pushbutton one */
+    QString filename = QFileDialog::getOpenFileName(this, tr("Choose"), "", tr("Images(*.bmp)"));
+    setFile2(filename);
+    if (QString::compare(filename, QString()) != 0)
+    {
+
+        QImage image;
+        bool valid = image.load(filename);
+        if (valid)
+        {
+        ui->label_11->setScaledContents(true);
+        ui->label_11->setPixmap(QPixmap::fromImage(image));
+        setimg2(image);
+        }
+
+    }
+
+
+
+
+
+}
+
+
+void MainWindow::on_pushButton_12_clicked()
+{
+
+}
+ void MainWindow::on_pushButton_13_clicked()  //load org button
+ {
+     QString filename = QFileDialog::getOpenFileName(this, tr("Choose"), "", tr("Images(*.bmp)"));
+     setFile1(filename);
+     if (QString::compare(filename, QString()) != 0)
+     {
+
+         QImage image;
+         bool valid = image.load(filename);
+         if (valid)
+         {
+         ui->label_13->setScaledContents(true);
+         ui->label_13->setPixmap(QPixmap::fromImage(image));
+         setimg1(image);  //orgina load image copy
+         setimg3(image); // if for brightness
+         setimg4(image); // if for contrast algorthim
+        // QRect loc1(0,.0,800,400);
+         QImage temp = image.scaled(200,200,Qt::IgnoreAspectRatio);
+         QSize size = temp.size();
+          qDebug("size of size array: [%d], [%d]", size.rheight(), size.rwidth());
+         temp.save("test.bmp");
+         }
+
+     }
+
+     ui->lbl_image_5->setScaledContents(true);
+     ui->lbl_image_5->setPixmap(QPixmap::fromImage(getimg1()));
 
 
 
  }
+
+void MainWindow::on_pushButton_14_clicked()  //load second img and overlay them
+{
+
+    QString filename = QFileDialog::getOpenFileName(this, tr("Choose"), "", tr("Images(*.bmp)"));
+    setFile2(filename);
+    if (QString::compare(filename, QString()) != 0)
+    {
+        QImage image;
+        bool valid = image.load(filename);
+        if (valid)
+        {
+        //ui->label_14->setScaledContents(true);
+       // ui->label_14->setPixmap(QPixmap::fromImage(image));
+        setimg2(image); // copy of unedited overlay
+
+
+        }
+    }
+    QImage overLayImg = overLay(getimg1(),getimg2());
+    ui->label_14->setScaledContents(true);
+    ui->label_14->setPixmap(QPixmap::fromImage(overLayImg));
+
+    QImage temp = overLayImg.scaled(200,200,Qt::IgnoreAspectRatio);
+    QSize size = temp.size();
+     qDebug("size of size array: [%d], [%d]", size.rheight(), size.rwidth());
+    temp.save("test.bmp");
+
+
+
+    setimg3(overLayImg);
+    //setimg4(overLayImg);
+
+    ui->lbl_image_5->setScaledContents(true);
+    ui->lbl_image_5->setPixmap(QPixmap::fromImage(getimg3()));
+}
+
+
+void MainWindow::on_pushButton_15_clicked()   //send img button
+{
+
+    QFile* img = new QFile("test.bmp");  // Create QFile from Image that needs to be sent
+    connectToHost();  //connect to host will print debug statment if not conencted
+    if(img->exists()==true)
+    {
+        qDebug("Image Found!!!");
+        data.clear();     //clear byte array holding img data
+        img->open(QIODevice::ReadOnly);   //open img to read data
+        data = img->readAll();  //read raw data from img
+        quint32 size = data.toBase64().size();  // raw data size of img in base64
+        sendToTCPServer(data.toBase64(),size);  //send data in base64 to server
+        img->close();   // close Img
+    }
+}
+
+void MainWindow::sendToTCPServer(QByteArray data, quint32 sizeImage)
+{
+    if (socket1->state() == QAbstractSocket::ConnectedState)
+    {
+        socket1->write(data);
+        qDebug("SUCCESS: Image Sent of Size: %d", sizeImage);
+        qDebug("-----------------------------------");
+
+    }
+    else
+    {
+        qDebug("ERROR: Image Did Not Send");
+        qDebug("-----------------------------------");
+
+    }
+}
+void MainWindow::connectToHost()
+{
+    socket1->connectToHost(QHostAddress(getipFPGA()),getportNumber());
+    if (socket1->waitForConnected())
+    {
+        qDebug("-----------------------------------");
+        qDebug("CONNECTED TO SERVER");
+    }
+    else
+    {
+        qDebug("NOT CONNECTED");
+    }
+}

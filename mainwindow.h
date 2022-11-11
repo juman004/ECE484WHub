@@ -5,12 +5,20 @@
 #include <QFileDialog>
 #include <QPainter>
 #include <QtDebug>
+#include <QDebug>
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <QUdpSocket>
 #include <string>
 #include <QtGlobal>
+#include <QBuffer>
+#include <QImageWriter>
+#include <QTcpSocket>
+#include <QFile>
+#include <QIODevice>
+#include <QAbstractSocket>
+#include <QChar>
 
 
 //#include "opencv2/opencv.hpp"
@@ -36,19 +44,20 @@ public:
     QString ipFPGA;
     int portNumber;
     QUdpSocket *socket;
+    QTcpSocket *socket1;
+
     QByteArray data;
 
-
-    int brightValue=0;;
+    int brightValue=0;
     int contrastValue=0;
 
 
     QString file1;
     QString file2;
     QString file3;
-    QImage img1;
-    QImage img2;
-    QImage img3;
+    QImage img1;  //base img
+    QImage img2;  //overLay img
+    QImage img3; //working Img
     QImage img4;
 
     QString getipFPGA(){return ipFPGA;}
@@ -56,6 +65,8 @@ public:
 
     int getbrightValue(){return brightValue;}
     int getcontrastValue(){return contrastValue;}
+
+
 
     QString getFile1(){return file1;}
     QString getFile2(){return file2;}
@@ -71,14 +82,17 @@ public:
     QImage adjBright(QImage &image,int brightness);
     QImage adjContrast(QImage &image, int factor);
 
-    void sendBrightnessToFPGA();
+    void valueSplitter();
     void sendToUDPServer(QString x, int port);
+
+    void sendToTCPServer(QByteArray data,quint32 sizeImage);
+
+
 
 
 
 private slots:
     void on_pushButton_clicked();
-
 
 
     void on_pushButton_2_clicked();
@@ -113,16 +127,45 @@ private slots:
 
     void on_pushButton_6_clicked();
 
-    void on_pushButton_7_clicked();
+
 
     void on_bn_Slider_sliderMoved(int position);
 
     void on_bn_Slider_2_sliderReleased();
 
 
+    void on_pushButton_8_clicked();
+
+    void on_pushButton_9_clicked();
+
+    void on_pushButton_10_clicked();
+
+    void on_pushButton_11_clicked();
+
+    void on_pushButton_12_clicked();
+
+    void on_pushButton_13_clicked();
+
+    void on_pushButton_14_clicked();
+
+    void on_pushButton_15_clicked();
+
+    //void on_pushButton_16_clicked();
+
 private:
     Ui::MainWindow *ui;
     //QUdpSocket *socket;
+
+public slots:
+   /*
+    void connected();
+    void disconnected();
+    void readyRead();
+    void onReadyRead();
+*/
+    void connectToHost();
+
+
 };
 
 
