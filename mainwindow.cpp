@@ -12,6 +12,22 @@ MainWindow::MainWindow(QWidget *parent)
  //   socket = new QUdpSocket(this);
     setipFPGA("192.168.0.16");
     setportNumber(1234);
+
+    setimageHeight(200);
+    setimageWidth(200);
+
+    QString height;
+    QString width;
+
+    height.setNum(getimageHeight());
+    width.setNum(getimageWidth());
+
+
+
+
+    ui->label_17->setText(height);
+    ui->label_18->setText(width);
+
     ui->label_6->setText(getipFPGA());
     QString temp;
     temp.setNum(getportNumber());
@@ -86,7 +102,7 @@ QImage MainWindow::overLay(QImage org, QImage over)
 
     QImage fImage = QImage (org.size(), QImage::Format_RGB16); //create a QImage final  Instance based on size of orginal image and format to RBG16
     QPainter overlay(&fImage);  // CREATE QPainter instacne based final image. passed by referecne to ensure changes are applied
-    QRect loc1(0,.0,400,300);   // create QrRect instance that will be used later for overlay
+    QRect loc1(0,0,400,300);   // create QrRect instance that will be used later for overlay
     overlay.drawImage(0,0,org);  // draw the orginal image onto the QPainter objetc
     overlay.drawImage(loc1,over);  // Draw the rectangle over the Qpainter object and fill that rectangle with overlay image
     bool save =fImage.save("test.bmp");  // save the overlay image on computer
@@ -453,7 +469,8 @@ void MainWindow::on_pushButton_12_clicked()
          setimg3(image); // if for brightness
          setimg4(image); // if for contrast algorthim
         // QRect loc1(0,.0,800,400);
-         QImage temp = image.scaled(200,200,Qt::IgnoreAspectRatio);
+         QImage temp = image.scaled(getimageWidth(),getimageWidth(),Qt::IgnoreAspectRatio);
+
          QSize size = temp.size();
           qDebug("size of size array: [%d], [%d]", size.rheight(), size.rwidth());
          temp.save("test.bmp");
@@ -490,11 +507,10 @@ void MainWindow::on_pushButton_14_clicked()  //load second img and overlay them
     ui->label_14->setScaledContents(true);
     ui->label_14->setPixmap(QPixmap::fromImage(overLayImg));
 
-    QImage temp = overLayImg.scaled(200,200,Qt::IgnoreAspectRatio);
+    QImage temp = overLayImg.scaled(getimageWidth(),getimageHeight(),Qt::IgnoreAspectRatio);
     QSize size = temp.size();
      qDebug("size of size array: [%d], [%d]", size.rheight(), size.rwidth());
     temp.save("test.bmp");
-
 
 
     setimg3(overLayImg);
@@ -551,3 +567,20 @@ void MainWindow::connectToHost()
         qDebug("NOT CONNECTED");
     }
 }
+
+void MainWindow::on_pushButton_7_clicked()
+{
+     ui->label_17->setText(ui->lineEdit_3->text());
+        setimageHeight(ui->lineEdit_3->text().toUInt());
+}
+
+
+void MainWindow::on_pushButton_16_clicked()
+{
+
+    ui->label_18->setText(ui->lineEdit_4->text());
+     setimageWidth(ui->lineEdit_4->text().toUInt());
+
+
+}
+

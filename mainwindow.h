@@ -44,9 +44,12 @@ public:
     QString ipFPGA;
     int portNumber;
     QUdpSocket *socket;
-    QTcpSocket *socket1;
 
+    QTcpSocket *socket1;
     QByteArray data;
+
+    int imageHeight;
+    int imageWidth;
 
     int brightValue=0;
     int contrastValue=0;
@@ -62,6 +65,12 @@ public:
 
     QString getipFPGA(){return ipFPGA;}
     int getportNumber(){return portNumber;}
+
+    int getimageHeight(){return imageHeight;}
+    int getimageWidth(){return imageWidth;}
+
+
+
 
     int getbrightValue(){return brightValue;}
     int getcontrastValue(){return contrastValue;}
@@ -111,6 +120,9 @@ private slots:
     void setipFPGA(QString ip) {ipFPGA = ip;}
     void setportNumber(int port) {portNumber = port;}
 
+    void setimageHeight(int height){imageHeight = height;}
+    void setimageWidth(int width){imageWidth = width;}
+
 
     void setFile1(QString file){file1 = file;}
     void setFile2(QString file){file2 = file;}
@@ -151,6 +163,10 @@ private slots:
     void on_pushButton_15_clicked();
 
     //void on_pushButton_16_clicked();
+
+    void on_pushButton_7_clicked();
+
+    void on_pushButton_16_clicked();
 
 private:
     Ui::MainWindow *ui;
