@@ -468,7 +468,7 @@ void MainWindow::on_pushButton_12_clicked()
          setimg3(image); // if for brightness
          setimg4(image); // if for contrast algorthim
         // QRect loc1(0,.0,800,400);
-         QImage temp = image.scaled(getimageWidth(),getimageWidth(),Qt::IgnoreAspectRatio);
+         QImage temp = image.scaled(getimageWidth(),getimageHeight(),Qt::IgnoreAspectRatio);
 
          QSize size = temp.size();
           qDebug("size of size array: [%d], [%d]", size.rheight(), size.rwidth());
@@ -574,16 +574,37 @@ void MainWindow::connectToHost()
 
 void MainWindow::on_pushButton_7_clicked()
 {
-     ui->label_17->setText(ui->lineEdit_3->text());
-        setimageHeight(ui->lineEdit_3->text().toUInt());
+
+     if (ui->lineEdit_3->text().toUInt() > 480 )
+     {
+        ui->label_17->setText("480");
+         setimageHeight(480);
+     }
+     else
+     {
+           ui->label_17->setText(ui->lineEdit_3->text());
+            setimageHeight(ui->lineEdit_3->text().toUInt());
+
+     }
+
 }
 
 
 void MainWindow::on_pushButton_16_clicked()
 {
 
-    ui->label_18->setText(ui->lineEdit_4->text());
-     setimageWidth(ui->lineEdit_4->text().toUInt());
+    if (ui->lineEdit_4->text().toUInt() > 800 )
+    {
+         ui->label_18->setText("800");
+         setimageWidth(800);
+
+    }
+    else
+     {
+       ui->label_18->setText(ui->lineEdit_4->text());
+         setimageWidth(ui->lineEdit_4->text().toUInt());
+
+    }
 
 
 }

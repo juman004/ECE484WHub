@@ -41,62 +41,130 @@ string openCVType2str(int type) {
 
     return r;
 }
+int calXcoor(cv::Mat org, int location)
+{
+    int x; 
+
+    switch (location)
+    {
+    case 1: 
+         x = 0; 
+        break;
+    case 2:
+        x = 800 - org.cols; 
+        break;
+    case 3:
+        x = 0;
+        break;
+    case 4:
+        x = 800 - org.cols;
+        break; 
+
+
+
+    }
+    return x; 
+}
+int calYcoor(cv::Mat org, int location)
+{
+    int y; 
+    switch (location)
+    {
+    case 1:
+        y = 0;
+        break;
+    case 2:
+        y = 0; 
+        break;
+    case 3:
+        y = 480 - org.rows;
+        break;
+    case 4:
+        y = 480 - org.rows;
+        break;
+    }
+
+    return y; 
+}
+
+
+
+
 // Main 
 int main()
 {
-    Mat src;
-    D8MCapture *cap = new D8MCapture(TV_DECODER_TERASIC_STREAM_CAPTURE_BASE, CAPTURE_RAM_DEVICE);
-    if (!cap->isOpened()) {
-        return -1;
-    }
-
-    
-
-    namedWindow("camera");
-
-    while (1) {
-        if (!cap->read(src))
-            return -1;
-
    
+    while (1)
+    {
+        destroyAllWindows();
+        int overLayLocation;
+        cout << "\nTop Left [1]\nTop Right [2]\nBottom Left[3]\nBottom Right[4]\nEXIT[5]\n" << endl;
+        cout << "Enter Desired OverLay Image Placement: ";
+        cin >> overLayLocation;
+       // destroyAllWindows();
 
-        Mat dst; 
-        Mat img = imread("/home/root/Desktop/assg4/ImageFromClient.bmp", IMREAD_UNCHANGED);
-        usleep(3); 
-
-        // overlay img has 3 channels || regular img as 1 channel 
-        // live video is 8UC4 USER image is 8UC1
-        //The Next to If Statements Matches the Overlay imaeg channel to Live Video Channel 
-
-        if (img.channels() == 3) //overlayed images 
-         {
-           cvtColor(img, dst, COLOR_BGR2BGRA); // Color_BGR2BGRA will alway be 4 channels and 8U format 
-           dst.copyTo(src(cv::Rect(0, 280, img.cols, img.rows))); // overlay converted on live video 
-
-         }
-        if (img.channels() == 1) // regualr imgs 
+        if (overLayLocation == 1 || overLayLocation == 2 || overLayLocation == 3 || overLayLocation == 4)
         {
-           Mat channels[4] = { img,img,img,img };
-           merge(channels, 4, dst);  // convert 1 channel to 4 
-           dst.copyTo(src(cv::Rect(0, 280, img.cols, img.rows))); // overlay converted on live video 
+            Mat src;
+            D8MCapture* cap = new D8MCapture(TV_DECODER_TERASIC_STREAM_CAPTURE_BASE, CAPTURE_RAM_DEVICE);
+            namedWindow("camera");
+            
+            while (1) {
+                if (!cap->read(src))
+                    return -1;
 
+
+
+                Mat dst;
+                Mat img = imread("/home/root/Desktop/assg4/ImageFromClient.bmp", IMREAD_UNCHANGED);
+                usleep(3);
+
+                // overlay img has 3 channels || regular img as 1 channel 
+                // live video is 8UC4 USER image is 8UC1
+                //The Next to If Statements Matches the Overlay imaeg channel to Live Video Channel 
+
+                if (img.channels() == 3) //overlayed images 
+                {
+                    cvtColor(img, dst, COLOR_BGR2BGRA); // Color_BGR2BGRA will alway be 4 channels and 8U format 
+                    dst.copyTo(src(cv::Rect(calXcoor(dst,overLayLocation), calYcoor(dst,overLayLocation), img.cols, img.rows))); // overlay converted on live video 
+
+                }
+                if (img.channels() == 1) // regualr imgs 
+                {
+                    Mat channels[4] = { img,img,img,img };
+                    merge(channels, 4, dst);  // convert 1 channel to 4 
+                    dst.copyTo(src(cv::Rect(calXcoor(dst, overLayLocation), calYcoor(dst, overLayLocation), img.cols, img.rows))); // overlay converted on live video X,Y format 
+
+                }
+
+
+                imshow("camera", src); // window namevc == camera 
+                 
+
+
+
+
+                //-- bail out if escape was pressed
+                int c = waitKey(10);
+                if ((char)c == 27) {
+                    break;
+                }
+            }
+            delete cap;
+            destroyAllWindows();
+            destroyWindow("camera");
+            
         }
-       
-       
-        imshow("camera", src); // window name == camera 
+        if (overLayLocation == 5)
+        {
 
-       
-
-
-
-        //-- bail out if escape was pressed
-        int c = waitKey(10);
-        if ((char) c == 27) {
-            break;
+            return 0; 
         }
+        else
+        {
+            cout << "Invalid Input Try Again " << endl;
+        }
+
     }
-    delete cap;
-    destroyAllWindows();
 
-    return 0;
 }
