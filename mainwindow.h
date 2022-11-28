@@ -88,7 +88,7 @@ public:
 
     int getsliderVal(){return sliderVal;}
     QImage overLay(QImage org, QImage over);
-    QImage adjBright(QImage &image,int brightness);
+    QImage adjBright(QImage &pic,int brightness);
     QImage adjContrast(QImage &image, int factor);
 
     void valueSplitter();

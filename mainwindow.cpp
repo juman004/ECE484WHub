@@ -21,10 +21,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     height.setNum(getimageHeight());
     width.setNum(getimageWidth());
-
-
-
-
     ui->label_17->setText(height);
     ui->label_18->setText(width);
 
@@ -34,19 +30,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->label_9->setText(temp);
    // socket -> bind(QHostAddress(getipFPGA()),getportNumber());
     data.resize(4);
-
-
     // TCP Socket Initalization
     socket1= new QTcpSocket (this);
-    //socket1->connectToHost(QHostAddress(getipFPGA()),getportNumber());
-
-
-    //QObject::connect(socket1, SIGNAL(QIODevice::readyRead()), this, SLOT(MainWindow::onReadyRead()));
-
-
-
-
-
 }
 
 MainWindow::~MainWindow()
@@ -100,7 +85,7 @@ void MainWindow::on_pushButton_2_clicked()
 QImage MainWindow::overLay(QImage org, QImage over)
 {
 
-    QImage fImage = QImage (org.size(), QImage::Format_RGB16); //create a QImage final  Instance based on size of orginal image and format to RBG16
+    QImage fImage = QImage (org.size(), QImage::Format_Grayscale8); //create a QImage final  Instance based on size of orginal image and format to RBG16
     QPainter overlay(&fImage);  // CREATE QPainter instacne based final image. passed by referecne to ensure changes are applied
     QRect loc1(0,0,400,300);   // create QrRect instance that will be used later for overlay
     overlay.drawImage(0,0,org);  // draw the orginal image onto the QPainter objetc
@@ -142,16 +127,23 @@ void MainWindow::on_pushButton_6_clicked()
 
 
 
-QImage MainWindow::adjBright(QImage &image,int brightness)
+QImage MainWindow::adjBright(QImage &pic,int brightness)
 {
 
           /* Two Parameters, the image being adjusted and the factor of adjustemnt **/
-
-            QImage origin = image;  /// make a copy of orginal image
+    //qDebug("Image Dimension: [ %d, %d ]", pic.height(), pic.width());
+           // QImage temp2 ("test.bmp");
+            QImage image= pic.scaled(512,512, Qt::IgnoreAspectRatio, Qt::FastTransformation);  /// make a copy of orginal image
             QColor oldColor; // create a QColor instance, holds RBG value
             int delta = brightness;   // copy brightness factor
 
            QImage * newImage = new QImage(image);// new image QImage Pointer, based on size of orginal image format chanegd to RBG32 so RGB values can be cha
+           bool temp = newImage->isNull();
+           qDebug("Is image valid? %d", temp);
+           qDebug("Image Dimension: [ %d, %d ]", newImage->height(), newImage->width());
+
+
+
 
             for(int y=0; y<newImage->height(); ++y)
             {
@@ -160,7 +152,7 @@ QImage MainWindow::adjBright(QImage &image,int brightness)
                 {
 
                     //qDebug("Factir pixel : %d", x);
-                    oldColor = origin.pixelColor(y,x);
+                    oldColor = image.pixelColor(y,x);
 
                     int newcolorVal = oldColor.value() + delta;
                     if (newcolorVal > 255)
@@ -189,10 +181,11 @@ QImage MainWindow::adjBright(QImage &image,int brightness)
 
             return *newImage;
 
+
 }
 QImage MainWindow::adjContrast(QImage &image, int factor)
 {
-    QImage origin = image;  /// make a copy of orginal image
+    QImage origin = image.scaled(512,512, Qt::IgnoreAspectRatio, Qt::FastTransformation);;  /// make a copy of orginal image
     QColor oldColor; // create a QColor instance, holds RBG value
     int minintensity=255;
     int maxintensity =0;
@@ -288,11 +281,16 @@ void MainWindow::on_bn_Slider_sliderMoved(int position)
     setbrightVal(position);
    //valueSplitter();
     QImage copy= getimg3();
+
+
+    // QImage copy("test.bmp");
+
     QImage orgImg= adjBright(copy,position);
    // sendBrightnessToFPGA();
     setimg4(orgImg);
     ui->lbl_image_5->setPixmap(QPixmap::fromImage(orgImg));
-     orgImg.save("test.bmp"); // save the image
+     QImage temp = orgImg.scaled(getimageWidth(),getimageHeight(),Qt::IgnoreAspectRatio);
+     temp.save("test.bmp"); // save the image
 
 }
 
@@ -307,7 +305,8 @@ void MainWindow::on_bn_Slider_2_sliderReleased()
     QImage contImg= adjContrast(copyBright,value); // call fun
      //sendBrightnessToFPGA();
     ui->lbl_image_5->setPixmap(QPixmap::fromImage(contImg));
-    contImg.save("test.bmp"); // save the image
+     QImage temp = contImg.scaled(getimageWidth(),getimageHeight(),Qt::IgnoreAspectRatio);
+    temp.save("test.bmp"); // save the image
 }
 void MainWindow::sendToUDPServer(QString x, int port)
 {
@@ -499,8 +498,7 @@ void MainWindow::on_pushButton_14_clicked()  //load second img and overlay them
         //ui->label_14->setScaledContents(true);
        // ui->label_14->setPixmap(QPixmap::fromImage(image));
         setimg2(image); // copy of unedited overlay
-
-
+        //setimg3(image);
         }
     }
     QImage overLayImg = overLay(getimg1(),getimg2());
@@ -508,19 +506,25 @@ void MainWindow::on_pushButton_14_clicked()  //load second img and overlay them
     ui->label_14->setPixmap(QPixmap::fromImage(overLayImg));
 
     QImage temp = overLayImg.scaled(getimageWidth(),getimageHeight(),Qt::IgnoreAspectRatio);
-    QSize size = temp.size();
-     qDebug("size of size array: [%d], [%d]", size.rheight(), size.rwidth());
-    temp.save("test.bmp");
+    //QSize size = temp.size();
+    // qDebug("size of size array: [%d], [%d]", size.rheight(), size.rwidth());
+     temp.save("test.bmp");
 
 
-    setimg3(overLayImg);
-    //setimg4(overLayImg);
+    QImage realOverlay("test.bmp", "BMP");
+   // QImage realOverlay;
+   // realOverlay.load("test.bmp",QImage::Format_Grayscale8);
+
+
+
+
+    setimg3(realOverlay);
+    setimg4(realOverlay);
 
     ui->lbl_image_5->setScaledContents(true);
-    ui->lbl_image_5->setPixmap(QPixmap::fromImage(getimg3()));
+    ui->lbl_image_5->setPixmap(QPixmap::fromImage(realOverlay));
+
 }
-
-
 void MainWindow::on_pushButton_15_clicked()   //send img button
 {
 

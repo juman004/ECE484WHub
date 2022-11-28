@@ -27,3 +27,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 
 
+
+win32:CONFIG(release, debug|release): LIBS += -LD:/opencv/build/x64/vc15/lib/ -lopencv_world460
+else:win32:CONFIG(debug, debug|release): LIBS += -LD:/opencv/build/x64/vc15/lib/ -lopencv_world460d
+else:unix: LIBS += -LD:/opencv/build/x64/vc15/lib/ -lopencv_world460
+
+INCLUDEPATH += D:/opencv/build/include
+DEPENDPATH += D:/opencv/build/include

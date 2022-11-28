@@ -169,10 +169,10 @@
        </rect>
       </property>
       <property name="minimum">
-       <number>0</number>
+       <number>-255</number>
       </property>
       <property name="maximum">
-       <number>99</number>
+       <number>255</number>
       </property>
       <property name="singleStep">
        <number>1</number>
@@ -207,7 +207,7 @@
        <number>0</number>
       </property>
       <property name="maximum">
-       <number>25</number>
+       <number>75</number>
       </property>
       <property name="singleStep">
        <number>1</number>
@@ -592,7 +592,7 @@
      <x>0</x>
      <y>0</y>
      <width>830</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
